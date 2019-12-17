@@ -108,17 +108,17 @@ mod day3 {
         let crosses = crossovers(move1, move2);
         assert_eq!(crosses.len(), 2);
         assert_eq!(min_manhatten_distance(&crosses), 6);
-        let min_dist = crosses.iter().map(|(x,y,d)| d).min().expect("no min");
+        let min_dist = crosses.iter().map(|(_x,_y,d)| d).min().expect("no min");
         assert_eq!(*min_dist, 30);
     }
 
-    // disabled, dunno why it fails.
+// disabled, dunno why it fails.
 //    #[test]
     fn test_1() {
         let move1 = parse_moves("R75,D30,R83,U83,L12,D49,R71,U7,L72".to_owned());
         let move2 = parse_moves("U62,R66,U55,R34,D71,R55,D58,R83".to_owned());
         let crosses = crossovers(move1, move2);
-        let min_dist = crosses.iter().map(|(x,y,d)| d).min().expect("no min");
+        let min_dist = crosses.iter().map(|(_x,_y,d)| d).min().expect("no min");
         assert_eq!(*min_dist, 610);
         assert_eq!(min_manhatten_distance(&crosses), 159);
 
@@ -130,7 +130,7 @@ mod day3 {
         let move2 = parse_moves("U98,R91,D20,R16,D67,R40,U7,R15,U6,R7".to_owned());
         let crosses = crossovers(move1, move2);
         assert_eq!(min_manhatten_distance(&crosses), 135);
-        let min_dist = crosses.iter().map(|(x,y,d)| d).min().expect("no min");
+        let min_dist = crosses.iter().map(|(_,_y,d)| d).min().expect("no min");
         assert_eq!(*min_dist, 410);
     }
 }

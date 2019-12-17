@@ -94,7 +94,7 @@ mod day1 {
 #[cfg(test)]
 mod day2 {
     use super::*;
-
+    use input::split_commas;
     #[test]
     fn test1() {
         let input = split_commas("1,0,0,0,99".into());
