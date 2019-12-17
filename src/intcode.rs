@@ -9,8 +9,23 @@ fn output<W: Write>(val: i32, mut out: &mut W) {
     out.write(&val.to_ne_bytes());
 }
 
-fn handle_parameter_modes(op: i32, v1: i32, v2: i32, v3: i32, data: &mut Vec<i32>) {
+fn get_value(pos: i32, immediate_mode: bool, data: &Vec<i32>) -> i32{
+    println!("Getting value {} in mode {}", pos, immediate_mode);
+    if immediate_mode {
+        pos
+    } else {
+        data[pos as usize]
+    }
+}
 
+fn parse_modes(param: i32) -> (bool, bool, bool) {
+    let op = param % 100;
+    let param = param - op;
+    let m3 = param % 1_000;
+    let param = param - m3;
+    let m2 = param % 10_000;
+    let param = param - m2;
+    (param == 10_000, m2 == 1_000, m3 == 100)
 }
 
 fn execute<W: Write>(opt: Vec<i32>, mut out: &mut W) -> Vec<i32> {
@@ -20,24 +35,19 @@ fn execute<W: Write>(opt: Vec<i32>, mut out: &mut W) -> Vec<i32> {
         if iptr+3 > data.len() {
             break;
         }
-        let op = data[iptr];
+        let op = data[iptr] % 100;
+        let (m1, m2, m3) = parse_modes(data[iptr]);
 //        println!("{}, {}, {}, {}", op, data[iptr+1], data[iptr+2], data[iptr+3]);
         let v1 = data[iptr+1];
         let v2 = data[iptr+2];
         let v3 = data[iptr+3];
         match op {
-            1 => data[v3 as usize] = data[v1 as usize] + data[v2 as usize],
+            1 => data[v3 as usize] = get_value(v1, m1, &data) + get_value(v2, m2, &data),
             2 => data[v3 as usize] = data[v1 as usize] * data[v2 as usize],
             3 => data[v1 as usize] = input(),
             4 => output(data[v1 as usize], out),
             99 => break,
-            _ => {
-                if 1000 <= op && op <= 9999 {
-                    handle_parameter_modes(op, v1, v2, v3, &mut data);
-                } else {
-                    unimplemented!()
-                }
-            }
+            _ => unimplemented!()
         }
 //        println!("{:?}", &data);
         iptr += 4;
@@ -90,6 +100,14 @@ mod day5 {
         output(5, &mut writer);
         assert_eq!(writer[0], 5u8);
         assert_eq!(writer[1], 0u8);
+    }
+
+    #[test]
+    fn test_parse_modes() {
+        assert_eq!(parse_modes(1002), (false,true,false));
+        assert_eq!(parse_modes(11102), (true,true,true));
+        assert_eq!(parse_modes(2), (false,false,false));
+        assert_eq!(parse_modes(11002), (true,true,false));
 
     }
 
