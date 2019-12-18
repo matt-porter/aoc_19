@@ -8,7 +8,7 @@ mod passwords;
 use passwords::day4;
 
 mod intcode;
-use intcode::{day2, day5};
+use intcode::{day2, day5_1, day5_2};
 
 fn fuel(mass: i32) -> i32 {
     let val = mass / 3 - 2;
@@ -30,7 +30,8 @@ fn main() {
 //    day2();
 //    day3();
 //    day4();
-    day5();
+    day5_1();
+    day5_2();
 }
 
 #[cfg(test)]
