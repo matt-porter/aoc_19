@@ -11,7 +11,7 @@ mod intcode;
 use intcode::{day2, day5_1, day5_2};
 
 mod orbits;
-use orbits::day6_1;
+use orbits::{day6_1, day6_2};
 
 fn fuel(mass: i32) -> i32 {
     let val = mass / 3 - 2;
@@ -35,7 +35,8 @@ fn main() {
 //    day4();
 //    day5_1();
 //    day5_2();
-    day6_1();
+//    day6_1();
+    day6_2();
 }
 
 #[cfg(test)]
