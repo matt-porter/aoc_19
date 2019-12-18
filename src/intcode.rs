@@ -60,9 +60,9 @@ fn execute<W: Write>(opt: Vec<i32>, mut out: &mut W) -> Vec<i32> {
             },
             4 => {
                 let val = get_value(v1, m1, &data);
-                if val != 0 {
-                    println!("Failed at {}, previous instructions were: {:?} {:?}", iptr, &data[iptr-8..iptr], &data[iptr..iptr+4])
-                }
+//                if val != 0 {
+//                    println!("Failed at {}, previous instructions were: {:?} {:?}", iptr, &data[iptr-8..iptr], &data[iptr..iptr+4])
+//                }
                 output(get_value(v1, m1, &data), out);
                 iptr += 2;
 
@@ -109,11 +109,12 @@ mod day5 {
     use crate::input::split_commas;
 
     #[test]
-    fn test_input() {
+    fn test_input_output() {
         let mut writer: Vec<u8> = Vec::new();
         let input = split_commas("3,0,4,0,99".into());
-        assert_eq!(execute(input, &mut writer), split_commas("3,0,4,0,99".into()));
-        // how to test output?
+        assert_eq!(execute(input, &mut writer), split_commas("1,0,4,0,99".into()));
+        // test output?
+        assert_eq!(&writer[0..4], &1i32.to_ne_bytes());
     }
 
     #[test]
