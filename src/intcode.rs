@@ -35,16 +35,12 @@ fn execute<W: Write>(opt: Vec<i32>, mut out: &mut W, input_values: &[i32]) -> Ve
     let mut inputptr: usize = 0;
     let mut data = opt.clone();
     loop {
-        if iptr+3 > data.len() {
-            break;
-        }
         let op = data[iptr] % 100;
         let (m1, m2, m3) = parse_modes(data[iptr]);
 //        println!("{}, {}, {}, {}", op, data[iptr+1], data[iptr+2], data[iptr+3]);
         let v1 = *data.get(iptr+1).unwrap_or(&0);
         let v2 = *data.get(iptr+2).unwrap_or(&0);
         let v3 = *data.get(iptr+3).unwrap_or(&0);
-//        println!("Op {}", op);
         match op {
             1 => { // ADD
 //                println!("data[{}] = get({}, {}) + get({}, {})", v3, v1, m1, v2, m2);
@@ -60,8 +56,8 @@ fn execute<W: Write>(opt: Vec<i32>, mut out: &mut W, input_values: &[i32]) -> Ve
                 iptr += 2;
             },
             4 => { // OUTPUT
-                let val = get_value(v1, m1, &data);
-                output(get_value(v1, m1, &data), out);
+                let v = get_value(v1, m1, &data);
+                output(v, out);
                 iptr += 2;
 
             },
@@ -70,6 +66,8 @@ fn execute<W: Write>(opt: Vec<i32>, mut out: &mut W, input_values: &[i32]) -> Ve
                 if val != 0 {
                     let target = get_value(v2, m2, &data);
                     iptr = target as usize;
+                } else {
+                    iptr += 3
                 }
             },
             6 => { // JUMP-IF-FALSE
@@ -77,20 +75,20 @@ fn execute<W: Write>(opt: Vec<i32>, mut out: &mut W, input_values: &[i32]) -> Ve
                 if val == 0 {
                     let target = get_value(v2, m2, &data);
                     iptr = target as usize;
+                } else {
+                    iptr += 3
                 }
             },
             7 => { // LESS THAN
                 let lhs = get_value(v1, m1, &data);
-                let rhs = get_value(v1, m1, &data);
-                let target = get_value(v3, m3, &data);
-                data[target as usize] = if lhs < rhs {1} else {0};
+                let rhs = get_value(v2, m2, &data);
+                data[v3 as usize] = if lhs < rhs {1} else {0};
                 iptr += 4
             },
             8 => { // EQUALS
                 let lhs = get_value(v1, m1, &data);
-                let rhs = get_value(v1, m1, &data);
-                let target = get_value(v3, m3, &data);
-                data[target as usize] = if lhs == rhs {1} else {0};
+                let rhs = get_value(v2, m2, &data);
+                data[v3 as usize] = if lhs == rhs {1} else {0};
                 iptr += 4
             },
             99 => break,
@@ -142,6 +140,116 @@ mod day5 {
     use super::*;
     use crate::input::split_commas;
 
+    #[test]
+    fn test_compare_eq() {
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,9,8,9,10,9,4,9,99,-1,8".into());
+        execute(program.clone(), &mut writer,&[8]);
+        assert_eq!(&writer[0..4], &1i32.to_ne_bytes());
+        writer.clear();
+
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,9,8,9,10,9,4,9,99,-1,8".into());
+        execute(program.clone(), &mut writer,&[7]);
+        assert_eq!(&writer[0..4], &0i32.to_ne_bytes());
+        writer.clear();
+    }
+
+    #[test]
+    fn test_compare_eq_im() {
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,3,1108,-1,8,3,4,3,99".into());
+        execute(program.clone(), &mut writer,&[8]);
+        assert_eq!(&writer[0..4], &1i32.to_ne_bytes());
+        writer.clear();
+
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,3,1108,-1,8,3,4,3,99".into());
+        execute(program.clone(), &mut writer,&[7]);
+        assert_eq!(&writer[0..4], &0i32.to_ne_bytes());
+        writer.clear();
+    }
+
+    #[test]
+    fn test_compare_lt() {
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,9,7,9,10,9,4,9,99,-1,8".into());
+        execute(program.clone(), &mut writer,&[2]);
+        assert_eq!(&writer[0..4], &1i32.to_ne_bytes());
+        writer.clear();
+
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,9,7,9,10,9,4,9,99,-1,8".into());
+        execute(program.clone(), &mut writer,&[9]);
+        assert_eq!(&writer[0..4], &0i32.to_ne_bytes());
+        writer.clear();
+    }
+
+    #[test]
+    fn test_compare_lt_im() {
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,3,1107,-1,8,3,4,3,99".into());
+        execute(program.clone(), &mut writer,&[2]);
+        assert_eq!(&writer[0..4], &1i32.to_ne_bytes());
+        writer.clear();
+
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,3,1107,-1,8,3,4,3,99".into());
+        execute(program.clone(), &mut writer,&[9]);
+        assert_eq!(&writer[0..4], &0i32.to_ne_bytes());
+        writer.clear();
+    }
+
+    #[test]
+    fn test_compare_jump_pos() {
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9".into());
+        execute(program.clone(), &mut writer,&[0]);
+        assert_eq!(&writer[0..4], &0i32.to_ne_bytes());
+        writer.clear();
+
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9".into());
+        execute(program.clone(), &mut writer,&[9]);
+        assert_eq!(&writer[0..4], &1i32.to_ne_bytes());
+        writer.clear();
+    }
+
+    #[test]
+    fn test_compare_jump_im() {
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,3,1105,-1,9,1101,0,0,12,4,12,99,1".into());
+        execute(program.clone(), &mut writer,&[0]);
+        assert_eq!(&writer[0..4], &0i32.to_ne_bytes());
+        writer.clear();
+
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,3,1105,-1,9,1101,0,0,12,4,12,99,1".into());
+        execute(program.clone(), &mut writer,&[9]);
+        assert_eq!(&writer[0..4], &1i32.to_ne_bytes());
+        writer.clear();
+    }
+
+    #[test]
+    fn test_larger_example() {
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99".into());
+        execute(program.clone(), &mut writer,&[1]);
+        assert_eq!(&writer[0..4], &999i32.to_ne_bytes());
+        writer.clear();
+
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99".into());
+        execute(program.clone(), &mut writer,&[8]);
+        assert_eq!(&writer[0..4], &1000i32.to_ne_bytes());
+        writer.clear();
+
+        let mut writer: Vec<u8> = Vec::new();
+        let program = split_commas("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99".into());
+        execute(program.clone(), &mut writer,&[12]);
+        assert_eq!(&writer[0..4], &1001i32.to_ne_bytes());
+        writer.clear();
+    }
     #[test]
     fn test_input_output() {
         let mut writer: Vec<u8> = Vec::new();
