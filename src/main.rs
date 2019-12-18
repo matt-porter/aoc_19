@@ -10,6 +10,9 @@ use passwords::day4;
 mod intcode;
 use intcode::{day2, day5_1, day5_2};
 
+mod orbits;
+use orbits::day6_1;
+
 fn fuel(mass: i32) -> i32 {
     let val = mass / 3 - 2;
     if val <= 0 {
@@ -20,7 +23,7 @@ fn fuel(mass: i32) -> i32 {
 }
 
 fn day1() {
-    let masses = load_input_lines();
+    let masses = load_input_lines("day1.txt");
     let fuel: i32 = masses.iter().map(|mass| fuel(*mass)).sum();
     println!("Day 1: {}", fuel);
 }
@@ -30,8 +33,9 @@ fn main() {
 //    day2();
 //    day3();
 //    day4();
-    day5_1();
-    day5_2();
+//    day5_1();
+//    day5_2();
+    day6_1();
 }
 
 #[cfg(test)]

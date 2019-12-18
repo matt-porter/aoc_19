@@ -2,11 +2,19 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::str::FromStr;
 
-pub fn load_input_lines() -> Vec<i32> {
-    let f = File::open("input/day1.txt").expect("Failed to open day1.txt");
+pub fn load_input_lines(filename: &str) -> Vec<i32> {
+    let f = File::open(format!("input/{}", filename)).expect("Failed to open file");
     BufReader::new(f)
         .lines()
         .map(|l| i32::from_str(&l.unwrap()).unwrap()).collect()
+}
+
+pub fn load_input_lines_str(filename: &str) -> Vec<String> {
+    let f = File::open(format!("input/{}", filename)).expect("Failed to open file");
+    BufReader::new(f)
+        .lines()
+        .filter_map(Result::ok)
+        .collect()
 }
 
 pub fn split_commas(s: String) -> Vec<i32> {
